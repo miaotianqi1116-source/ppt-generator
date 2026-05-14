@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT生成器 - 扣子工作流配套</title>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1a365d;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .panel h2 {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #2b6cb0;
+            border-radius: 2px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #2b6cb0;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: #2b6cb0;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1a365d;
+        }
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        .color-presets {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .color-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .color-btn.active {
+            border-color: #2d3748;
+            transform: scale(1.1);
+        }
+        .preview-area {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 300px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4a5568;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .preview-area .slide-preview {
+            background: #fff;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .preview-area .slide-preview h3 {
+            font-size: 16px;
+            color: #1a365d;
+            margin-bottom: 8px;
+        }
+        .preview-area .slide-preview ul {
+            padding-left: 20px;
+            color: #4a5568;
+        }
+        .preview-area .slide-preview li {
+            margin: 4px 0;
+        }
+        .status {
+            margin-top: 12px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+        .status.success {
+            display: block;
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        .status.error {
+            display: block;
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        .tips {
+            margin-top: 20px;
+            padding: 16px;
+            background: #ebf8ff;
+            border-radius: 8px;
+            border-left: 4px solid #2b6cb0;
+        }
+        .tips h3 {
+            font-size: 14px;
+            color: #2b6cb0;
+            margin-bottom: 8px;
+        }
+        .tips p {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        .tips code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 PPT 生成器</h1>
+        <p class="subtitle">扣子工作流配套工具 · 粘贴JSON → 生成专业PPT</p>
+        
+        <div class="main-grid">
+            <!-- 左侧：输入区 -->
+            <div class="panel">
+                <h2>输入数据</h2>
+                <textarea id="jsonInput" placeholder='粘贴扣子工作流输出的JSON，例如：
+[
+  {"page":1,"title":"项目概述","content":"- 总投资5亿\n- 占地120亩","layout":"cover"},
+  {"page":2,"title":"市场分析","content":"- 目标客群25-45岁\n- 周边竞品3家","layout":"content"}
+]'></textarea>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="generatePPT()">📥 生成并下载PPT</button>
+                    <button class="btn-secondary" onclick="loadExample()">加载示例</button>
+                    <button class="btn-secondary" onclick="clearAll()">清空</button>
+                </div>
+                
+                <div class="color-presets" id="colorPresets"></div>
+                
+                <div id="status" class="status"></div>
+            </div>
+            
+            <!-- 右侧：预览区 -->
+            <div class="panel">
+                <h2>预览</h2>
+                <div class="preview-area" id="preview">
+                    <p style="color:#a0aec0;text-align:center;margin-top:120px;">
+                        输入JSON后，这里会显示预览
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tips">
+            <h3>💡 使用说明</h3>
+            <p>
+                1. 在扣子工作流"结束"节点，输出变量选择 <code>代码.key0</code>（JSON字符串）<<br>
+                2. 把输出的JSON复制粘贴到左侧输入框<br>
+                3. 选择配色方案，点击"生成并下载PPT"<br>
+                4. 生成的 .pptx 文件可直接用 PowerPoint / WPS 打开编辑
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 高级感配色方案（8组精选）
+        const colorSchemes = [
+            { name: '商务蓝', primary: '1A365D', secondary: '2B6CB0', accent: '63B3ED', bg: 'FFFFFF', text: '2D3748' },
+            { name: '高级灰', primary: '2D3748', secondary: '4A5568', accent: 'A0AEC0', bg: 'F7FAFC', text: '1A202C' },
+            { name: '深靛蓝', primary: '1E3A5F', secondary: '2E5C8A', accent: '4A90B8', bg: 'FFFFFF', text: '1A202C' },
+            { name: '墨绿金', primary: '1B4332', secondary: '2D6A4F', accent: 'D4AF37', bg: 'FAFAFA', text: '1A202C' },
+            { name: '酒红灰', primary: '742A2A', secondary: '9B2C2C', accent: 'C53030', bg: 'FFFAF0', text: '2D3748' },
+            { name: '紫罗兰', primary: '44337A', secondary: '6B46C1', accent: '9F7AEA', bg: 'FAF5FF', text: '2D3748' },
+            { name: '橙活力', primary: '7B341E', secondary: 'C05621', accent: 'ED8936', bg: 'FFFAF0', text: '2D3748' },
+            { name: '青瓦黛', primary: '234E52', secondary: '38A169', accent: '68D391', bg: 'F0FFF4', text: '1A202C' },
+        ];
+        
+        let currentScheme = colorSchemes[0];
+        
+        // 初始化配色按钮
+        function initColorPresets() {
+            const container = document.getElementById('colorPresets');
+            colorSchemes.forEach((scheme, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'color-btn' + (idx === 0 ? ' active' : '');
+                btn.style.background = `linear-gradient(135deg, #${scheme.primary} 50%, #${scheme.secondary} 50%)`;
+                btn.title = scheme.name;
+                btn.onclick = () => {
+                    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentScheme = scheme;
+                    updatePreview();
+                };
+                container.appendChild(btn);
+            });
+        }
+        
+        // 加载示例
+        function loadExample() {
+            const example = [
+                {"page":1,"title":"唐山花海南区城市更新项目","content":"- 总投资5.2亿元，占地120亩\n- 位于唐山市路北区核心地段\n- 打造城市更新示范标杆\n- 预计2027年全面建成投运","layout":"cover"},
+                {"page":2,"title":"项目背景与机遇","content":"- 唐山进入城市更新关键期，政策红利密集释放\n- 花海南区工业遗存资源丰富，改造潜力巨大\n- 周边3公里覆盖人口45万，消费基础扎实\n- 京津冀协同发展带来产业外溢机遇","layout":"content"},
+                {"page":3,"title":"市场定位与客群","content":"- 核心客群：25-45岁新中产家庭（占比60%）\n- 次级客群：Z世代潮流消费者（占比25%）\n- 商务客群：企业团建、会议会展（占比15%）\n- 差异化定位：工业遗产+现代商业+文化体验","layout":"content"},
+                {"page":4,"title":"运营策略与收益","content":"- 轻资产模式：引入专业运营商，降低自持压力\n- 首年营收预测：3000万元，毛利率42%\n- 五年营收复合增长率：18%\n- 投资回收期：预计6.8年","layout":"content"},
+                {"page":5,"title":"实施路径与保障","content":"- 一期（2025-2026）：基础设施改造+主力店引入\n- 二期（2026-2027）：文化业态填充+品牌升级\n- 政策保障：争取专项债+城市更新基金支持\n- 风险管控：建立动态监测与退出机制","layout":"content"}
+            ];
+            document.getElementById('jsonInput').value = JSON.stringify(example, null, 2);
+            updatePreview();
+            showStatus('示例已加载', 'success');
+        }
+        
+        // 清空
+        function clearAll() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('preview').innerHTML = '<p style="color:#a0aec0;text-align:center;margin-top:120px;">输入JSON后，这里会显示预览</p>';
+        }
+        
+        // 解析输入
+        function parseInput() {
+            const raw = document.getElementById('jsonInput').value.trim();
+            if (!raw) return null;
+            
+            try {
+                return JSON.parse(raw);
+            } catch (e) {
+                const match = raw.match(/\[.*\]/s);
+                if (match) return JSON.parse(match[0]);
+                throw e;
+            }
+        }
+        
+        // 更新预览
+        function updatePreview() {
+            const data = parseInput();
+            if (!data) return;
+            
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            
+            data.forEach(slide => {
+                const div = document.createElement('div');
+                div.className = 'slide-preview';
+                const lines = (slide.content || '').split('\n').filter(l => l.trim());
+                const bullets = lines.map(l => `<li>${l.replace(/^[-•]\s*/, '')}</li>`).join('');
+                
+                div.innerHTML = `
+                    <h3>${slide.page}. ${slide.title}</h3>
+                    <ul>${bullets}</ul>
+                `;
+                preview.appendChild(div);
+            });
+        }
+        
+        // 显示状态
+        function showStatus(msg, type) {
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.className = 'status ' + type;
+            setTimeout(() => status.className = 'status', 3000);
+        }
+        
+        // 生成PPT
+        function generatePPT() {
+            let data;
+            try {
+                data = parseInput();
+            } catch (e) {
+                showStatus('JSON格式错误，请检查输入', 'error');
+                return;
+            }
+            
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                showStatus('数据为空或格式不正确', 'error');
+                return;
+            }
+            
+            try {
+                const pptx = new PptxGenJS();
+                const s = currentScheme;
+                
+                pptx.title = data[0]?.title || '未命名PPT';
+                pptx.author = '铭嘉工程';
+                pptx.company = '河北铭嘉工程咨询有限公司';
+                
+                const COLOR_PRIMARY = s.primary;
+                const COLOR_SECONDARY = s.secondary;
+                const COLOR_ACCENT = s.accent;
+                const COLOR_BG = s.bg;
+                const COLOR_TEXT = s.text;
+                
+                data.forEach((slide, idx) => {
+                    const isCover = idx === 0 || slide.layout === 'cover';
+                    const slideP = pptx.addSlide();
+                    
+                    slideP.background = { color: COLOR_BG };
+                    
+                    if (isCover) {
+                        slideP.addShape('rect', {
+                            x: 0, y: 0, w: '100%', h: '100%',
+                            fill: { color: COLOR_PRIMARY }
+                        });
+                        slideP.addShape('rect', {
+                            x: 0, y: 0, w: '100%', h: 0.15,
+                            fill: { color: COLOR_ACCENT }
+                        });
+                        slideP.addText(slide.title, {
+                            x: 0.5, y: 2.5, w: 9, h: 1.5,
+                            fontSize: 36, bold: true, color: 'FFFFFF',
+                            fontFace: '微软雅黑', align: 'center'
+                        });
+                        slideP.addText(`第 ${slide.page} 页`, {
+                            x: 0.5, y: 4.2, w: 9, h: 0.5,
+                            fontSize: 14, color: COLOR_ACCENT,
+                            fontFace: '微软雅黑', align: 'center'
+                        });
+                    } else {
+                        slideP.addShape('rect', {
+                            x: 0, y: 0, w: '100%', h: 0.12,
+                            fill: { color: COLOR_PRIMARY }
+                        });
+                        slideP.addShape('rect', {
+                            x: 0, y: 0.12, w: 0.08, h: '100%',
+                            fill: { color: COLOR_SECONDARY }
+                        });
+                        slideP.addText(slide.title, {
+                            x: 0.5, y: 0.4, w: 9, h: 0.8,
+                            fontSize: 28, bold: true, color: COLOR_PRIMARY,
+                            fontFace: '微软雅黑'
+                        });
+                        slideP.addShape('line', {
+                            x: 0.5, y: 1.2, w: 8, h: 0,
+                            line: { color: COLOR_SECONDARY, width: 1.5 }
+                        });
+                        
+                        const lines = (slide.content || '').split('\n').filter(l => l.trim());
+                        const bullets = lines.map(l => l.replace(/^[-•]\s*/, '')).filter(l => l);
+                        
+                        bullets.forEach((bullet, bidx) => {
+                            slideP.addText(bullet, {
+                                x: 0.7, y: 1.6 + bidx * 0.7, w: 8.5, h: 0.6,
+                                fontSize: 18, color: COLOR_TEXT,
+                                fontFace: '微软雅黑',
+                                bullet: { type: 'number', color: COLOR_SECONDARY }
+                            });
+                        });
+                    }
+                });
+                
+                const fileName = `${data[0]?.title || 'PPT'}_${new Date().getTime()}.pptx`;
+                pptx.writeFile({ fileName: fileName });
+                
+                showStatus(`PPT已生成：${fileName}`, 'success');
+                
+            } catch (e) {
+                console.error(e);
+                showStatus('生成失败：' + e.message, 'error');
+            }
+        }
+        
+        // 监听输入变化
+        document.getElementById('jsonInput').addEventListener('input', updatePreview);
+        
+        // 初始化
+        initColorPresets();
+    </script>
+</body>
+</html>
